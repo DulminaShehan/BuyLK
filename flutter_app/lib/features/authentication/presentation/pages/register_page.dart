@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:buylk/features/authentication/presentation/providers/auth_provider.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends ConsumerState<RegisterPage> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _submit() async {
+    setState(() => _isLoading = true);
+    final controller = ref.read(authControllerProvider);
+    await controller.register(
+      fullName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    context.go('/home');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,26 +49,37 @@ class RegisterPage extends StatelessWidget {
               Text('Create a buyer, seller, rider, or admin account',
                   style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 24),
-              const TextField(
-                  decoration: InputDecoration(
-                      labelText: 'Full name', border: OutlineInputBorder())),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                    labelText: 'Full name', border: OutlineInputBorder()),
+              ),
               const SizedBox(height: 16),
-              const TextField(
-                  decoration: InputDecoration(
-                      labelText: 'Email', border: OutlineInputBorder())),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                    labelText: 'Email', border: OutlineInputBorder()),
+              ),
               const SizedBox(height: 16),
-              const TextField(
-                  decoration: InputDecoration(
-                      labelText: 'Phone', border: OutlineInputBorder())),
+              TextField(
+                controller: _phoneController,
+                decoration: const InputDecoration(
+                    labelText: 'Phone', border: OutlineInputBorder()),
+              ),
               const SizedBox(height: 16),
-              const TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                      labelText: 'Password', border: OutlineInputBorder())),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                    labelText: 'Password', border: OutlineInputBorder()),
+              ),
               const SizedBox(height: 24),
               FilledButton(
-                  onPressed: () => context.go('/home'),
-                  child: const Text('Create account')),
+                onPressed: _isLoading ? null : _submit,
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Create account'),
+              ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
